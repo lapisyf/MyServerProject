@@ -1,0 +1,112 @@
+using System.Collections;
+using System.Collections.Generic;
+using System;
+using System.Runtime.InteropServices;
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct QuaternionData
+{
+    [MarshalAs(UnmanagedType.R4)]
+    public float x;
+    [MarshalAs(UnmanagedType.R4)]
+    public float y;
+    [MarshalAs(UnmanagedType.R4)]
+    public float z;
+    [MarshalAs(UnmanagedType.R4)]
+    public float w;
+}
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct Vector3Data
+{
+    [MarshalAs(UnmanagedType.R4)]
+    public float x;
+    [MarshalAs(UnmanagedType.R4)]
+    public float y;
+    [MarshalAs(UnmanagedType.R4)]
+    public float z;
+}
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct Vector2Data
+{
+    [MarshalAs(UnmanagedType.R4)]
+    public float x;
+    [MarshalAs(UnmanagedType.R4)]
+    public float y;
+}
+
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct PacketMoveData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_id;
+
+    public Vector3Data m_position;
+
+    public QuaternionData m_rotation;
+
+    public Vector2Data m_move;
+
+    [MarshalAs(UnmanagedType.R4)]
+    public float m_animing;
+
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_state;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemyData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+
+    public PacketMoveData m_moveData;
+}
+
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct IDData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_id;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct ListData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_size;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+    public int[] m_list;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemySpawnAmountData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_spawnAmount;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemySpawnData
+{
+    [MarshalAs(UnmanagedType.I1)]
+    public bool m_isHost;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_size;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+    public int[] m_list;
+}
