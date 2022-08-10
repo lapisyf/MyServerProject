@@ -10,30 +10,17 @@ public enum E_PROTOCOL
 {
     CRYPTOKEY,      // 서버 -> 클라				:	초기 암복호화키 전송 신호
 
-    STC_HOSTIDCREATE,
     STC_IDCREATE,
     CTS_IDCREATE,
 
     STC_SPAWN,
     CTS_SPAWN,
 
-    CTS_ENEMYSPAWN,
-    STC_ENEMYSPAWN,
-
-    CTS_ENEMYHIT,
-    STC_ENEMYHIT,
-
     STC_MOVE,
     CTS_MOVE,
 
-    STC_ENEMYMOVE,
-    CTS_ENEMYMOVE,
-
     STC_OUT,
     CTS_OUT,
-
-    STC_ENEMYOUT,
-    CTS_ENEMYOUT,
 
     STC_EXIT,
     CTS_EXIT,
@@ -68,14 +55,9 @@ public class Session
     static AutoResetEvent autoRecvEndEvent = new AutoResetEvent(false);
 
     private bool _running = true;
+    public bool Running { get => _running; }
     private Queue<byte[]> _sendQ = new Queue<byte[]>();
     private Queue<byte[]> _recvQ = new Queue<byte[]>();
-
-    private bool m_isHost = false;
-    #endregion
-
-    #region Property
-    public bool IsHost { get => m_isHost; set => m_isHost = value; }
     #endregion
 
     public Session()
@@ -92,12 +74,18 @@ public class Session
     {
         if (socket.Connect("127.0.0.1", 9000))
         {
+            _running = true;
             sendThread = new Thread(new ThreadStart(SendThread));
             recvThread = new Thread(new ThreadStart(RecvThread));
             sendThread.Start();
             recvThread.Start();
+            return true;
         }
-        return true;
+        else
+        {
+            return false;
+        }
+        
     }
 
     public void TreadEnd()
@@ -111,8 +99,6 @@ public class Session
     {
         socket.CloseSocket();
     }
-
-
 
     #region Send 관련
     void SendThread()

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using UnityEngine;
 
 public class NetWorkManager
 {
@@ -14,17 +13,20 @@ public class NetWorkManager
 
     private int m_clientId = -1;
     public int ClientId { get => m_clientId; }
+
     public void Initialize()
     {
         Register();
         session = new Session();
-        session.Initialize();
+        if (session.Initialize())
+        {
+
+        }
     }
     public void Register()
     {
         m_NetWorkProcess.Add((int)E_PROTOCOL.CRYPTOKEY, KeyProcess);
         m_NetWorkProcess.Add((int)E_PROTOCOL.STC_IDCREATE, IdProcess);
-        m_NetWorkProcess.Add((int)E_PROTOCOL.STC_HOSTIDCREATE, HostIdProcess);
     }
     public void Register(E_PROTOCOL _protocol, Action _action)
     {
@@ -38,13 +40,6 @@ public class NetWorkManager
         session.CryptoKeyDataSetting();
         session.Write((int)E_PROTOCOL.CTS_IDCREATE); // 立加
     }
-
-    private void HostIdProcess()
-    {
-        session.IsHost = true;
-        IdProcess();
-    }
-
     private void IdProcess()
     {
         int l_id = -1;
@@ -54,7 +49,6 @@ public class NetWorkManager
     }
     public void End()
     {
-        //MoveTest.GetInstance().CloseSocket();
         if (session.CheckConnecting())
         {
             session.Write((int)E_PROTOCOL.CTS_EXIT);// 辆丰
@@ -64,98 +58,24 @@ public class NetWorkManager
     }
     public void UpdateRecvProcess()
     {
-        if (session.CheckRead())
+        bool flag = true;
+        while(flag)
         {
-            if (m_NetWorkProcess.ContainsKey(session.GetProtocol()) == true)
+            if (session.CheckRead())
             {
-                m_NetWorkProcess[session.GetProtocol()].Invoke();
+                if (m_NetWorkProcess.ContainsKey(session.GetProtocol()) == true)
+                {
+                    m_NetWorkProcess[session.GetProtocol()].Invoke();
+                }
+                else
+                {
+                    flag = false;
+                }
             }
-
-            //switch (session.GetProtocol())
-            //{
-            //    case (int)E_PROTOCOL.CRYPTOKEY:
-            //        {
-            //            session.CryptoKeyDataSetting();
-            //            session.Write((int)E_PROTOCOL.CTS_IDCREATE); // 立加
-            //        }
-            //        break;
-            //    case (int)E_PROTOCOL.STC_IDCREATE:
-            //        {
-            //            IDData liddata;
-            //            session.GetData<IDData>(out liddata);
-            //            m_moveData.m_id = liddata.m_id;
-            //            session.Write((int)E_PROTOCOL.CTS_SPAWN);
-            //        }
-            //        break;
-            //    case (int)E_PROTOCOL.STC_SPAWN:
-            //        {
-            //            int lid;
-            //            ListData liddata;
-            //            session.GetData<ListData>(out liddata);
-
-            //            for (int i = 0; i < liddata.m_size; i++)
-            //            {
-            //                if (liddata.m_list[i] == -1)
-            //                {
-            //                    continue;
-            //                }
-            //                bool flag = true;
-            //                foreach (GameObject obj in players)
-            //                {
-            //                    if (obj.GetComponent<Player>().moveData.m_id == liddata.m_list[i])
-            //                    {
-            //                        flag = false;
-            //                    }
-            //                }
-            //                if (flag)
-            //                {
-            //                    GameObject temp = GameObject.Instantiate(playerUnit);
-            //                    temp.GetComponent<Player>().moveData.m_id = liddata.m_list[i];
-            //                    players.Add(temp);
-            //                    temp.SetActive(true);
-            //                }
-            //            }
-
-            //        }
-            //        break;
-            //    case (int)E_PROTOCOL.STC_MOVE:
-            //        {
-            //            int lid;
-            //            float lx;
-            //            float ly;
-            //            PacketMoveData lData;
-            //            session.GetData<PacketMoveData>(out lData);
-            //            foreach (GameObject obj in players)
-            //            {
-            //                if (obj.GetComponent<Player>().moveData.m_id == lData.m_id)
-            //                {
-            //                    obj.GetComponent<Player>().moveData = lData;
-            //                }
-            //            }
-            //        }
-            //        break;
-            //    case (int)E_PROTOCOL.STC_OUT:
-            //        {
-            //            int lid;
-            //            IDData liddata;
-            //            session.GetData<IDData>(out liddata);
-            //            foreach (GameObject obj in players)
-            //            {
-            //                if (obj.GetComponent<Player>().moveData.m_id == liddata.m_id)
-            //                {
-            //                    Destroy(obj);
-            //                    players.Remove(obj);
-            //                }
-            //            }
-            //        }
-            //        break;
-            //}
+            else
+            {
+                flag = false;
+            }
         }
-    }
-
-
-    void OnApplicationQuit()
-    {
-
     }
 }
