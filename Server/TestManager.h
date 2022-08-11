@@ -25,17 +25,30 @@ public:
 	{
 		CRYPTOKEY,		// 서버 -> 클라				:	초기 암복호화키 전송 신호
 
+		STC_HOSTIDCREATE,
 		STC_IDCREATE,
 		CTS_IDCREATE,
 
 		STC_SPAWN,
 		CTS_SPAWN,
 
+		CTS_ENEMYSPAWN, 
+		STC_ENEMYSPAWN, 
+
+		CTS_ENEMYHIT,
+		STC_ENEMYHIT,
+
 		STC_MOVE,
 		CTS_MOVE,
 
+		STC_ENEMYMOVE,
+		CTS_ENEMYMOVE,
+
 		STC_OUT,
 		CTS_OUT,
+
+		STC_ENEMYOUT,
+		CTS_ENEMYOUT,
 
 		STC_EXIT,
 		CTS_EXIT,
@@ -113,12 +126,36 @@ public:
 		float m_animing;
 		int m_state;
 	};
+	
+	struct EnemyData
+	{
+		EnemyData()
+		{
+			m_hp = 0;
+		}
+		EnemyData(int _hp,int _id)
+		{
+			m_hp = _hp;
+			m_moveData.m_id = _id;
+		}
+		void CopyData(EnemyData _Src)
+		{
+			m_hp = _Src.m_hp;
+			m_moveData = _Src.m_moveData;
+		}
+
+		int m_hp;
+		MoveData m_moveData;
+	};
 
 	void Function(Session* _session);
 
 	void IdCreateProcess(Session* _session);
+	void EnemySpawnProcess(Session* _session);
 	void SpawnProcess(Session* _session);
 	void PlayProcess(Session* _session);
+	void EnemyMoveProcess(Session* _session);
+	void EnemyOutProcess(Session* _session);
 	void ExitProcess(Session* _session);
 	void ForceExitProcess(Session* _session);
 #pragma region Packing&Unpacking
@@ -126,15 +163,22 @@ public:
 	//int SpawnDataMake(BYTE* _data, int _id);
 	int IdDataMake(BYTE* _data, int _id);
 	int SpawnDataMake(BYTE* _data);
+	int EnemySpawnDataMake(BYTE* _data, bool _isHost, int _hp);
 	int MoveDataMake(BYTE* _data, MoveData _moveData);
 	int ExitDataMake(BYTE* _data, int _id);
 	// unpacking
 	void MoveDataSplit(BYTE* _data, MoveData& _moveData);
+	void EnemySpawnDataSplit(BYTE* _data, int& _amount, int& _hp);
+	void IdDataSplit(BYTE* _data, int& _id);
 #pragma endregion
 private:
+	const int MAXLISTCOUNT = 5;
+
 	CriticalKey m_criticalKey;
 	int m_giveIdCounter;
+	int m_hostId;
 	list<Session*> m_playerList;
+	map<int,EnemyData> m_enemyDataList;
 	map<Session*, MoveData> m_MoveDataList;
 	// 플레이어 정보 - 세션
 	// 몬스터 정보 - 무관

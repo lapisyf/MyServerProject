@@ -10,17 +10,30 @@ public enum E_PROTOCOL
 {
     CRYPTOKEY,      // 서버 -> 클라				:	초기 암복호화키 전송 신호
 
+    STC_HOSTIDCREATE,
     STC_IDCREATE,
     CTS_IDCREATE,
 
     STC_SPAWN,
     CTS_SPAWN,
 
+    CTS_ENEMYSPAWN,
+    STC_ENEMYSPAWN,
+
+    CTS_ENEMYHIT,
+    STC_ENEMYHIT,
+
     STC_MOVE,
     CTS_MOVE,
 
+    STC_ENEMYMOVE,
+    CTS_ENEMYMOVE,
+
     STC_OUT,
     CTS_OUT,
+
+    STC_ENEMYOUT,
+    CTS_ENEMYOUT,
 
     STC_EXIT,
     CTS_EXIT,
@@ -55,9 +68,16 @@ public class Session
     static AutoResetEvent autoRecvEndEvent = new AutoResetEvent(false);
 
     private bool _running = true;
-    public bool Running { get => _running; }
+    private bool m_isHost = false;
+
     private Queue<byte[]> _sendQ = new Queue<byte[]>();
     private Queue<byte[]> _recvQ = new Queue<byte[]>();
+
+    #endregion
+
+    #region Property
+    public bool Running { get => _running; }
+    public bool IsHost { get => m_isHost; set => m_isHost = value; }
     #endregion
 
     public Session()

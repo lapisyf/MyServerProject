@@ -27,6 +27,7 @@ public class NetWorkManager
     {
         m_NetWorkProcess.Add((int)E_PROTOCOL.CRYPTOKEY, KeyProcess);
         m_NetWorkProcess.Add((int)E_PROTOCOL.STC_IDCREATE, IdProcess);
+        m_NetWorkProcess.Add((int)E_PROTOCOL.STC_HOSTIDCREATE, HostIdProcess);
     }
     public void Register(E_PROTOCOL _protocol, Action _action)
     {
@@ -40,6 +41,12 @@ public class NetWorkManager
         session.CryptoKeyDataSetting();
         session.Write((int)E_PROTOCOL.CTS_IDCREATE); // 접속
     }
+
+    private void HostIdProcess()
+    {
+        session.IsHost = true;
+        IdProcess();
+    }
     private void IdProcess()
     {
         int l_id = -1;
@@ -47,6 +54,8 @@ public class NetWorkManager
         m_clientId = l_id;
         session.Write((int)E_PROTOCOL.CTS_SPAWN); // 스폰요청
     }
+
+
     public void End()
     {
         if (session.CheckConnecting())

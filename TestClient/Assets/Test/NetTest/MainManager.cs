@@ -13,7 +13,9 @@ public class MainManager : MonoBehaviour
     }
     public FollowCam followCam;
     public GameObject playerUnit;
+    public GameObject enemyUnit;
     public Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
+    public Dictionary<int, GameObject> enemys = new Dictionary<int, GameObject>();
 
     #region 플레이어 컨트롤 변수
     public Player m_mainPlayer;
@@ -52,6 +54,19 @@ public class MainManager : MonoBehaviour
             m_mainPlayer.isJump = true;
         }
     }
+
+    // 임시 적 소환
+    void TestEnemySpawn()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            EnemySpawnAmountData l_SpawnAmountData;
+            l_SpawnAmountData.m_spawnAmount = 1;
+            l_SpawnAmountData.m_hp = 1;
+
+            m_network.Session.Write((int)E_PROTOCOL.CTS_ENEMYSPAWN, l_SpawnAmountData);
+        }
+    }
     #endregion
 
     void Start()
@@ -63,6 +78,10 @@ public class MainManager : MonoBehaviour
         m_network.Register(E_PROTOCOL.STC_SPAWN, SpawnProcess);
         m_network.Register(E_PROTOCOL.STC_MOVE, MoveProcess);
         m_network.Register(E_PROTOCOL.STC_OUT, OutProcess);
+
+        m_network.Register(E_PROTOCOL.STC_ENEMYSPAWN, EnemySpawnProcess);
+        m_network.Register(E_PROTOCOL.STC_ENEMYMOVE, EnemyMoveProcess);
+        m_network.Register(E_PROTOCOL.STC_ENEMYOUT, EnemyOutProcess);
         m_network.Initialize();
     }
     void Update()
@@ -84,6 +103,9 @@ public class MainManager : MonoBehaviour
             Move();
             Turn();
             Jump();
+
+            // test (후에는 트리거 충돌시 스폰)
+            TestEnemySpawn();
         }
         
         #endregion
@@ -175,5 +197,70 @@ public class MainManager : MonoBehaviour
         Destroy(players[liddata.m_id]);
         players.Remove(liddata.m_id);
     }
+
+
+    void EnemySpawnProcess()
+    {
+        EnemySpawnData lenemySpawnData;
+        m_network.Session.GetData<EnemySpawnData>(out lenemySpawnData);
+
+        for (int i = 0; i < lenemySpawnData.m_size; i++)
+        {
+            if (lenemySpawnData.m_list[i] == -1)
+            {
+                continue;
+            }
+            if (!enemys.ContainsKey(lenemySpawnData.m_list[i]))
+            {
+                GameObject temp = GameObject.Instantiate(enemyUnit);
+                Enemy enemy = temp.GetComponent<Enemy>();
+
+                enemy.m_enemyData.m_moveData.m_id = lenemySpawnData.m_list[i];
+                enemy.m_enemyData.m_hp = lenemySpawnData.m_hp;
+                enemy.AIFlag = lenemySpawnData.m_isHost ? true : false;
+                enemy.NetWork = m_network;
+                enemy.MainManager = GetComponent<MainManager>();
+
+                enemys.Add(lenemySpawnData.m_list[i], temp);
+                temp.SetActive(true);
+            }
+        }
+    }
+
+    void EnemyMoveProcess()
+    {
+        PacketMoveData lData;
+        m_network.Session.GetData<PacketMoveData>(out lData);
+
+        enemys[lData.m_id].GetComponent<Enemy>().m_enemyData.m_moveData = lData;
+        enemys[lData.m_id].transform.position
+            = new Vector3(lData.m_position.x, lData.m_position.y, lData.m_position.z);
+    }
+
+    void EnemyOutProcess()
+    {
+        IDData liddata;
+        m_network.Session.GetData<IDData>(out liddata);
+        Destroy(enemys[liddata.m_id]);
+        enemys.Remove(liddata.m_id);
+    }
+
+
+    //해당 함수는 Enemy정보를 관리하는 Manager에 들어가있어야함.
+    public void EnemyDestroy(Enemy _enemy)
+    {
+        _enemy.m_enemyData.m_hp -= 1;
+
+        if (_enemy.m_enemyData.m_hp <= 0)
+        {
+            IDData liddata;
+            liddata.m_id = _enemy.m_enemyData.m_moveData.m_id;
+            m_network.Session.Write((int)E_PROTOCOL.CTS_ENEMYOUT, liddata);
+
+            Destroy(_enemy.gameObject);
+            enemys.Remove(liddata.m_id);
+        }
+    }
+
     /*======================================*/
 }

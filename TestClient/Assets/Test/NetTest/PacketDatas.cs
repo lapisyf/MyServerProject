@@ -75,3 +75,38 @@ public struct ListData
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
     public int[] m_list;
 }
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemyData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+
+    public PacketMoveData m_moveData;
+}
+
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemySpawnAmountData
+{
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_spawnAmount;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+[Serializable]
+public struct EnemySpawnData
+{
+    [MarshalAs(UnmanagedType.I1)]
+    public bool m_isHost;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_hp;
+    [MarshalAs(UnmanagedType.I4)]
+    public int m_size;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+    public int[] m_list;
+}
